@@ -74,7 +74,7 @@ services:
     networks:
       - cicd-demo
     ports:
-      - "22:22"
+      - "2222:2222"
 
   web-beta:
     image: nginx
