@@ -1,0 +1,5 @@
+/data/*
+/gitea/*
+
+### Exclude
+!/*/.gitkeep

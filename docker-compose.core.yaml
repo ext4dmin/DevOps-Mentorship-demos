@@ -1,0 +1,109 @@
+# DB: postgresql
+# Git: gitea
+# CICD: gitea + gitea runner
+# Source check: sonarqube
+# Webservers: nginx [-prod; -beta]
+# Reverse Proxy: nginx
+name: demo
+services:
+  db:
+    container_name: db
+    build: 
+      context: .
+      dockerfile: db.Dockerfile
+    env_file:
+      - pgsql.env
+    networks:
+      - cicd-demo
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+
+
+  server:
+    container_name: gitea-server
+    image: gitea/gitea
+    
+    env_file:
+      - gitea.env
+    networks:
+      - cicd-demo
+    volumes:
+      - ./gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      - "22:22"
+    depends_on:
+      - db
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    env_file:
+      - ./sonar.env
+    volumes:
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_temp:/opt/sonarqube/temp
+      - /opt/sonarqube/data    
+    ports:
+      - "9000:9000"
+    networks:
+      - cicd-demo
+    depends_on:
+      - db
+    cpus: 0.5
+    mem_limit: 4096M
+    mem_reservation: 4096M
+
+  ftp:
+    image: delfer/alpine-ftp-server
+    container_name: ftp-server
+    volumes:
+      - ./web_content:/webcontent
+    environment:
+      - USERS="webcontent|1234"
+      - ADDRESS=ftp-server
+    networks:
+      - cicd-demo
+    ports:
+      - "20:20"
+      - "21:21"
+      - "21000-21010:21000-21010"
+
+  web-beta:
+    image: nginx
+    container_name: web-beta
+    volumes:
+      - ./web_content/web_beta:/usr/share/nginx/html:ro
+    networks:
+      - cicd-demo
+
+  web-prod:
+    image: nginx
+    container_name: web-prod
+    volumes:
+      - ./web_content/web_prod:/usr/share/nginx/html:ro
+    networks:
+      - cicd-demo
+
+  r_proxy: 
+    image: nginx
+    container_name: r_proxy
+    volumes:
+      - ./r_proxy:/etc/nginx:ro
+    networks:
+      - cicd-demo
+    ports:
+      - "80:80"
+  
+volumes:
+  postgres-db-volume:
+  sonarqube_extensions:
+  sonarqube_logs:
+  sonarqube_temp:
+
+networks:
+  cicd-demo:
+    name: cicd-demo

@@ -1,0 +1,63 @@
+name: Gitea CI/CD
+
+on: 
+  push:
+  pull_request:
+    types: [opened, closed]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install FTP
+      run: sudo apt-get update && sudo apt-get install -y ftp jq
+
+    - name: SonarQube Scan
+      uses: sonarsource/sonarqube-scan-action@v3
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+    - name: Check SonarQube Quality Gate
+      run: |
+        status=$(curl -s -u ${{ secrets.SONAR_TOKEN }} "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=test" | jq -r .projectStatus.status)
+        if [ "$status" != "OK" ]; then
+          echo "Quality gate failed: $status"
+          exit 1
+        else
+          echo "Quality gate passed: $status"
+        fi
+
+    - name: Upload to Beta FTP
+      if: success()
+      run: |
+        ftp -inv ${{ secrets.FTP_SERVER }} <<EOF
+        user ${{ secrets.FTP_USER }} ${{ secrets.FTP_PASSWORD }}
+        lcd ${{ github.workspace }}
+        cd /webcontent/beta
+        mput *
+        bye
+        EOF
+
+    - name: Web Check Beta
+      if: success()
+      run: curl --fail http://web-beta
+
+    - name: Upload to Prod FTP
+      if: success()
+      run: |
+        ftp -inv ${{ secrets.FTP_SERVER }} <<EOF
+        user ${{ secrets.FTP_USER }} ${{ secrets.FTP_PASSWORD }}
+        lcd ${{ github.workspace }}
+        cd /webcontent/prod
+        mput *
+        bye
+        EOF
+
+    - name: Web Check Prod
+      if: success()
+      run: curl --fail http://web-prod
