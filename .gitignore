@@ -1,5 +1,5 @@
 /data/*
 /gitea/*
-
+/ssh-server/*
 ### Exclude
 !/*/.gitkeep

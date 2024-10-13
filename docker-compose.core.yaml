@@ -68,6 +68,7 @@ services:
       - PASSWORD_ACCESS=true
       - USER_PASSWORD=sshpass
       - USER_NAME=sshuser
+      - LOG_STDOUT=true
     volumes:
       - ./ssh-server/config:/config
       - ./web_content:/web_content
