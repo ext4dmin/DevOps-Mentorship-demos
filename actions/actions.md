@@ -1,3 +1,7 @@
+1. [GitHub Events overview](#github-events-overview)
+2. [Multi-stages CI/CD actions](#multi-stages-cicd-actions)
+3. [GitHub variables](#github-variables)
+
 # GitHub Events Overview
 
 ## check_run
@@ -139,6 +143,8 @@
 ## workflow_run
 - **Types:** requested, completed
 - **Context:**
+
+# Multi-stages CI/CD actions
 
 ```yaml
 name: Multi-Stage CI/CD

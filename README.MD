@@ -90,4 +90,41 @@ It will deploy:
 
 # Set up Gitea (main CICD tool)
 
-1. According to [Gitea - modern lightweight self-hosted git service](https://site.extadmin.space/posts/how-to/gitea-modern-lightweight-self-hosted-git-service/), set up Gitea and add a act_runner (runtime). OAuth is not required. 
+1. Follow to http://localhost:3000
+
+2. In the **Initial Configuration** page find out **Optional settings -> Administrator Account Settings** section and expand it. Fill up the gaps
+    > E.g.  
+    >   Administrator Username:  *gitea-admin*  
+    >   Email Address:  *gitea-admin@example.com*  
+    >   Password:  *Pa55w0rD!!*  
+    >   Confirm Password:  *Pa55w0rD!!*
+
+And Press **Install**
+
+3. At the right top corner, press on the *account* button and sellect **Site Administration*
+
+4. In the *Admin Settings* menu choose **Actions -> Runners** section; and press the **Create new Runner** button. Copy a **Registration token**. Then bring back to codes folder, find ``act_runner.env`` and insert the token as value ``GITEA_RUNNER_REGISTRATION_TOKEN="ReplaceOnRgistrationToken"``
+
+5. Execute ``docker compose -f docker-compose.act_runner.yaml up -d`` in the repo's root for act-runner deploy.
+
+6. On the http://localhost:3000/admin/actions/runners you have to see the added runner in **Idle** status.
+
+# Set up SonarQube
+
+1. Follow to http://localhost:9000 and sign-in with credentials *admin* *admin*, then change pssword e.g. ``Pa55w0rD!!sonar``.
+
+2. Create a new local project
+
+    > Project display name: *DemoProject*  
+    > Project key: *DemoProject*  
+    > Main branch name: *main*  
+
+Then press **Next**, select **Use the global setting** and click on **Create Project**
+
+3. In the *Analys method* select **With GitHub Ations**. Generate token and save it for future. Follow the instructions.
+
+    > For example  
+    > sqp_917258c6705f366b62b5ab521a199a1c4011e9cb  
+    > 
+
+# Create a local repository and first action
