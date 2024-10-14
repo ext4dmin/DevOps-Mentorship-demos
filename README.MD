@@ -128,3 +128,20 @@ Then press **Next**, select **Use the global setting** and click on **Create Pro
     > 
 
 # Create a local repository and first action
+
+1. Go back to http://http://localhost:3000/ and create a new one 
+  > E.g. **Repository Name** *DemoProject*  
+
+2. Clone the repo to the local maschine and create ``./.gitea/workflows/main.yaml``; insert content ``/actions/main.yaml`` file into it. Additional create ``sonar-project.properties`` file in root folder of your repo with ``sonar.projectKey=DemoProject`` content.
+
+3. Go into the ropsitory settings [**Actions -> Secrets**](http://localhost:3000/gitea-admin/DemoProject/settings/actions/secrets) and create following 
+  
+  > SONAR_TOKEN=sqp_917258c6705f366b62b5ab521a199a1c4011e9cb  
+  > SONAR_HOST_URL=http://localhost:9000  
+  > SONAR_PROJECT_KEY=DemoProject  
+  > SSH_PASSWORD=sshpass  
+  > SSH_USER=sshuser
+
+4. Push repo changes to the gitea. Check actions.
+
+

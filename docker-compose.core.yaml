@@ -70,7 +70,7 @@ services:
       - USER_NAME=sshuser
       - LOG_STDOUT=true
     volumes:
-      - ./ssh-server/config:/config
+      # - ./ssh-server/config:/config
       - ./web_content:/web_content
     networks:
       - cicd-demo
