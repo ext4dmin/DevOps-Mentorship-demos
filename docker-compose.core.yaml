@@ -57,20 +57,25 @@ services:
     mem_limit: 4096M
     mem_reservation: 4096M
 
-  ftp:
-    image: delfer/alpine-ftp-server
-    container_name: ftp-server
-    volumes:
-      - ./web_content:/webcontent
+  ssh-server:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: ssh-server
+    hostname: ssh-server
     environment:
-      - USERS="webcontent|1234"
-      - ADDRESS=ftp-server
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - PASSWORD_ACCESS=true
+      - USER_PASSWORD=sshpass
+      - USER_NAME=sshuser
+      - LOG_STDOUT=true
+    volumes:
+      # - ./ssh-server/config:/config
+      - ./web_content:/web_content
     networks:
       - cicd-demo
     ports:
-      - "20:20"
-      - "21:21"
-      - "21000-21010:21000-21010"
+      - "2222:2222"
 
   web-beta:
     image: nginx

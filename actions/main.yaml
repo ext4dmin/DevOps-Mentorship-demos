@@ -13,8 +13,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Install FTP
-      run: sudo apt-get update && sudo apt-get install -y ftp jq
+    - name: Install Additional capabilities
+      run: sudo apt-get update && sudo apt-get install -y sshpass jq
 
     - name: SonarQube Scan
       uses: sonarsource/sonarqube-scan-action@v3
@@ -24,7 +24,7 @@ jobs:
 
     - name: Check SonarQube Quality Gate
       run: |
-        status=$(curl -s -u ${{ secrets.SONAR_TOKEN }} "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=test" | jq -r .projectStatus.status)
+        status=$(curl -s -u ${{ secrets.SONAR_TOKEN }} "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=DemoProject" | jq -r .projectStatus.status)
         if [ "$status" != "OK" ]; then
           echo "Quality gate failed: $status"
           exit 1
@@ -32,31 +32,23 @@ jobs:
           echo "Quality gate passed: $status"
         fi
 
-    - name: Upload to Beta FTP
+    - name: Upload files
       if: success()
       run: |
-        ftp -inv ${{ secrets.FTP_SERVER }} <<EOF
-        user ${{ secrets.FTP_USER }} ${{ secrets.FTP_PASSWORD }}
-        lcd ${{ github.workspace }}
-        cd /webcontent/beta
-        mput *
-        bye
-        EOF
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -C -P 2222 -o StrictHostKeyChecking=no -r ${{ github.workspace }}/* ${{ secrets.SSH_USER }}@ssh-server:/web_content/web_beta
+      env:
+        SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
 
     - name: Web Check Beta
       if: success()
       run: curl --fail http://web-beta
 
-    - name: Upload to Prod FTP
+    - name: Upload files
       if: success()
       run: |
-        ftp -inv ${{ secrets.FTP_SERVER }} <<EOF
-        user ${{ secrets.FTP_USER }} ${{ secrets.FTP_PASSWORD }}
-        lcd ${{ github.workspace }}
-        cd /webcontent/prod
-        mput *
-        bye
-        EOF
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -C -P 2222 -o StrictHostKeyChecking=no -r ${{ github.workspace }}/* ${{ secrets.SSH_USER }}@ssh-server:/web_content/web_prod
+      env:
+        SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
 
     - name: Web Check Prod
       if: success()
